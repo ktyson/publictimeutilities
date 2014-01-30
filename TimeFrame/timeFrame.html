@@ -1,0 +1,122 @@
+<html>
+<head>
+<meta charset="utf-8">
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js" type="text/javascript"></script>
+
+<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.9.0/jquery-ui.min.js" type="text/javascript"></script>
+<link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.2/themes/ui-lightness/jquery-ui.css" type="text/css" media="all" />
+
+<script>
+
+var weekStartDate = new Date("2014-01-26 00:00:00");
+
+var spans = {};
+
+
+$(document).ready(function(){
+	
+
+	makeFrame();
+
+	$(".span").on("click", function(){
+		var id = $(this).attr("id")
+		//alert("span " + id);
+		
+		$(this).css("background-color", "blue");
+		
+		if(!spans[id]) {
+			spans[id] = {};
+		} 
+		spans[id].color = "blue";
+		
+	
+	});
+
+});
+
+
+function makePallet() {
+
+	
+
+}
+
+function makeFrame() {	
+
+	var c = [];
+	
+	c.push("<table class='tablespan'>");
+	
+	c.push("<tr>");
+	c.push("<td></td>");
+	
+	for(var h = 0; h < 24*2; h++) {
+
+		if(h % 2) {
+			c.push("<th>" + "-" + "</th>");
+		} else {
+			c.push("<th>" + h/2 + "</th>");
+		}
+
+	}
+	c.push("</tr>");
+	
+	for (var d = 0; d < 7; d++) {
+		
+		c.push("<tr>");
+		
+		c.push("<td>" + d + "</td>");
+		
+			for(var h = 0; h < 24*2; h++) {
+			
+				var id = "d_" + d + "_h_" + h/2;
+	
+				c.push("<td><div id='" + id + "' class='span'></div></td>");
+	
+			}
+	
+		c.push("</tr>");
+
+	}
+	
+	c.push("</table>");
+	
+	$("#calendar").html(c.join(''));
+	
+	
+	$("#display").html(weekStartDate.toString());
+
+}
+
+
+</script>
+
+<style>
+
+table.tablespan td {
+    background-color: whte;
+}
+
+table.tablespan {
+    border-collapse: separate;
+    border-spacing: 0px;
+    *border-collapse: expression('separate', cellSpacing = '10px');
+}
+
+.span {
+	border: solid thin black;
+	width: 20px;
+	height: 20px;
+}
+
+</style>
+
+</head>
+<body>
+<div id="control"></div>
+<div id="display"></div>
+<div id="pallet"></div>
+<div id="calendar"></div>
+</body>
+</html>

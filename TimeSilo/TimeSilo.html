@@ -1,0 +1,287 @@
+<html>
+<head>
+<meta charset="UTF-8">
+
+<link href="jquery/jquery-ui-1.9.2.custom/css/smoothness/jquery-ui-1.9.2.custom.css" rel="stylesheet">
+<script src="jquery/jquery-ui-1.9.2.custom/js/jquery-1.8.3.js"></script>
+<script src="jquery/jquery-ui-1.9.2.custom/js/jquery-ui-1.9.2.custom.js"></script>
+
+<!--
+<script src="jquery/jquery-1.8.3.min.js" type="text/javascript"></script>
+<script src="jquery/jquery-ui-1.9.2.custom/jquery-ui-1.9.2.custom.min.js" type="text/javascript"></script>
+<script src="jquery/jquery-ui-1.9.2.custom/development-bundle/ui/minifiedjquery.ui.slider.js" type="text/javascript"></script>-->
+<link rel="stylesheet" href="jquery/jquery-ui-1.9.2.custom/css/smoothness/jquery-ui-1.9.2.custom.min.css"/>
+
+<script>
+
+
+var tracker = {};
+
+tracker.entities = [
+{"order":4,
+"name":"test1",
+"stage":"upcoming"
+},
+{"order":3,
+"name":"lbpj",
+"stage":"upcoming"
+},
+{"order":2,
+"name":"dsfsdf",
+"stage":"infocus"
+},
+{"order":1,
+"name":"endpoint",
+"stage":"released"
+}
+];
+
+tracker.changes = [];
+
+$(document).ready(function(){
+	
+	
+	makeContent();
+
+	
+	
+	$(".opt").live("dblclick", function(){
+		//console.log($(this).val());
+		if(confirm("Promote this?")){
+			promote($(this).val())
+		}
+	});
+	
+});
+
+function promote(entName){
+
+	//entities.sort(function(a,b){return a.order - b.order});
+
+	var thisEnt;
+	var nextEnt;
+	var removeIdx;
+	//find the entity
+	$.each(tracker.entities, function(idx,ent){
+		if(entName == ent.name){
+			thisEnt = ent;
+			removeIdx = idx;
+			//find next entity in line
+			$.each(tracker.entities, function(idx,ent2){
+				if(ent.order-1 == ent2.order){
+					nextEnt = ent2;
+				}
+			});
+		}
+	});
+	
+	if(thisEnt){
+		if(nextEnt){
+			//change stage if necessary
+			if(thisEnt.stage != nextEnt.stage){
+				makeChange(thisEnt.name, "move", new Date());
+			}else{
+				//switch orders
+				var newThis = nextEnt.order;
+				var newNext = thisEnt.order;
+				makeChange(thisEnt.name, "switch", new Date());
+				thisEnt.order = newThis;
+				nextEnt.order = newNext;			
+			}
+		}else{
+			//alert("No next entity found for "+entName);
+			if(thisEnt.stage != "released"){
+				makeChange(thisEnt.name, "move", new Date());						
+			}else{
+				if(confirm("Select OK to recyle to beginning; otherwise Cancel")){
+					//find highest order desc
+					tracker.entities.sort(function(a,b){return b.order - a.order})
+					var newOrd = tracker.entities[0].order + 1;
+					makeChange(thisEnt.name, "recycle", new Date());
+					thisEnt.order = newOrd;
+					thisEnt.stage = "upcoming";
+				}else{
+					if(confirm("Delete entity " + entName + "?")){
+						makeChange(thisEnt.name, "remove", new Date());
+						tracker.entities.splice(removeIdx,1);
+					}
+				}
+			}			
+		}
+		//refresh display
+		makeContent();
+	}else{
+		alert("No entity found: "+entName);
+	}
+
+
+}
+
+
+function makeChange(name, action, date){
+
+	
+	//move, switch, recycle, remove
+	switch(action){
+		case "move":
+			setStage(name, getNextStage(name));
+			break;
+		case "switch":
+			
+			break;
+		case "recycle":
+		
+			break;
+		case "remove":
+		
+			break;
+			
+		default:
+	
+			alert("Invalid change requested.");
+	}
+	
+	
+	
+	//add to change log
+	var change = {};
+	change.name = name;
+	change.action = action;
+	change.date = date;
+	tracker.changes.push(change);
+	
+	//
+	console.log(change);
+
+}
+
+function setStage(entName, nextStage){
+	$.each(tracker.entities, function(idx,ent){
+		if(entName == ent.name){
+			ent.stage = nextStage;
+		}
+	});
+}
+
+
+function getNextStage(entName){
+
+	//find the stage for this entity
+	var entStageName;
+	$.each(tracker.entities, function(idx,ent){
+		if(entName == ent.name){
+			var thisEnt = ent;
+			var removeIdx = idx;
+			//find next entity in line
+			$.each(tracker.entities, function(idx,ent2){
+				if(ent.order-1 == ent2.order){
+					var nextEnt = ent2;
+					entStageName = ent2.stage;
+				}
+			});
+		}
+	});	
+	//console.log("stage",entStageName);
+	if(entStageName){
+		return entStageName;
+	}else{
+		return "upcoming"; //first stage
+	}
+
+}
+
+function initializeSlider(){
+
+var start = new Date("01/01/2013 00:00:00 AM");
+var stop = new Date("03/01/2013 00:00:00 AM");
+$("#start").val(start.toLocaleString());
+$("#stop").val(stop.toLocaleString());
+
+$( "#slider" ).slider(
+	{"min":start.getTime(),
+	"max":stop.getTime(),
+	"value":start.getTime() + (stop.getTime()-start.getTime())/2,
+	"slide": function(obj, ui) {$('#displayDate').html( new Date(ui.value).toLocaleString()); }
+	});
+
+}
+
+function makeContent(){
+
+$("body").empty();
+
+
+//make date ranges
+$("body").append($("<div>Start:<input id='start'></input>Stop:<input id='stop'></input></div>"));
+
+//make slider
+$("body").append($("<div id='slider'></div><div id='displayDate'></div>"));
+initializeSlider();
+
+//make a list for every stage
+$("body").append($("<select id='upcoming' class='sel' size='5' multiple='multiple'></select>"));
+$("body").append($("<select id='infocus' class='sel' size='5' multiple='multiple'></select>"));
+$("body").append($("<select id='released' class='sel' size='5' multiple='multiple'></select>"));
+
+tracker.entities.sort(function(a,b){return a.order - b.order});
+
+$.each(tracker.entities,function(idx,ent){
+	var label = ent.name + " " + ent.order + " (" + ent.stage + ")";
+	$("#"+ent.stage).append($("<option class='opt' value='" + ent.name + "'>" + label + "</option>"));
+});
+
+}
+
+</script>
+
+<style>
+.sel{
+margin:5px;
+width:200px;
+}
+
+#start, #stop{
+width: 350px;
+}
+#stop{
+float:right;
+}
+
+#displayDate{
+text-align:center;
+font-size:14pt;
+font-weight:bold;
+}
+
+</style>
+
+</head>
+<body>
+
+
+<!--
+To Do:
+
+switch selects to divs w borders
+
+add ui datepickers and ui popups
+
+change from bubbling up and over to bubbling down and up and over
+like a silo that is filled from the top and emptied from the bottom
+with an elevator in between
+
+switch from numerical order to time-number order
+
+build out all the Change methods (switch inside silo, change silo, recycle, remove)
+
+initialization as a change array pointing to a background data array
+
+make a way to numerically model a change array
+
+-->
+
+
+</body>
+</html>
+
+
