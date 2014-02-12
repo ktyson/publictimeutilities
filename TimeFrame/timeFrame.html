@@ -10,35 +10,90 @@
 <script>
 
 var weekStartDate = new Date("2014-01-26 00:00:00");
-
+var owner = "kdtyson";
+var currColor;
 var spans = {};
 
 
 $(document).ready(function(){
 	
-
+	makePalette();
 	makeFrame();
+	
 
-	$(".span").on("click", function(){
-		var id = $(this).attr("id")
-		//alert("span " + id);
+	$(".span").on("hover click", function(){
 		
-		$(this).css("background-color", "blue");
+		if(event.which == 1) {
+			var id = $(this).attr("id")
+			//alert("span " + id);
 		
-		if(!spans[id]) {
-			spans[id] = {};
-		} 
-		spans[id].color = "blue";
+			$(this).css("background-color", currColor);
+		
+			if(!spans[id]) {
+				spans[id] = {};
+			} 
+			spans[id].color = "blue";
+		}
+	
+	});
+	
+	$(".colorspan").on("click", function(){
+	
+		
+		currColor = $(this).css("background-color");
 		
 	
 	});
+	
 
 });
 
+var timeType = {};
+timeType["kdtyson"] = {"choices": {}};
+timeType["kdtyson"].choices["green"] =
+		{level_1 : "TRC-Drisco",
+		level_2 : "Maintenance",
+		level_3 : "General",		
+		hidden : false,
+		activatedDate : "",
+		closedDate : ""	
+};
+timeType["kdtyson"].choices["blue"] =
+		{level_1 : "TRC-Bethel",
+		level_2 : "Maintenance",
+		level_3 : "General",		
+		hidden : false,
+		activatedDate : "",
+		closedDate : ""	
+};
+timeType["kdtyson"].choices["red"] =
+		{level_1 : "TT",
+		level_2 : "Maintenance",
+		level_3 : "General",		
+		hidden : false,
+		activatedDate : "",
+		closedDate : ""	
+};
 
-function makePallet() {
+function makePalette() {
 
+	var c = [];
 	
+	c.push("<table class='palette'><tr>");
+
+		c.push("<td>");
+		c.push("<div class='colorspan' style='background-color:white'></div>");		
+		c.push("</td>");
+	
+	for(var color in timeType["kdtyson"].choices) {
+		c.push("<td>");
+		c.push("<div class='colorspan' style='background-color:" + color + "'></div>");		
+		c.push("</td>");
+	} 
+	
+	c.push("</tr></table>");
+	
+	$("#palette").html(c.join(''));
 
 }
 
@@ -52,11 +107,16 @@ function makeFrame() {
 	c.push("<td></td>");
 	
 	for(var h = 0; h < 24*2; h++) {
-
-		if(h % 2) {
-			c.push("<th>" + "-" + "</th>");
-		} else {
-			c.push("<th>" + h/2 + "</th>");
+						
+		//trim hours
+		if(Math.abs(24 - h) < 12) {
+				
+			if(h % 2) {
+				c.push("<th>" + "-" + "</th>");
+			} else {
+				c.push("<th>" + h/2 + "</th>");
+			}
+		
 		}
 
 	}
@@ -66,14 +126,16 @@ function makeFrame() {
 		
 		c.push("<tr>");
 		
-		c.push("<td>" + d + "</td>");
+		c.push("<td>" + getDayLabel(d) + "</td>");
 		
 			for(var h = 0; h < 24*2; h++) {
 			
-				var id = "d_" + d + "_h_" + h/2;
+				//trim hours
+				if(Math.abs(24 - h) < 12) {
+					var id = "d_" + d + "_h_" + h/2;
 	
-				c.push("<td><div id='" + id + "' class='span'></div></td>");
-	
+					c.push("<td><div id='" + id + "' class='span'></div></td>");
+				}
 			}
 	
 		c.push("</tr>");
@@ -88,6 +150,16 @@ function makeFrame() {
 	$("#display").html(weekStartDate.toString());
 
 }
+
+function getDayLabel(dayNum) {
+
+	var days = ["Su","M","T","W","Th","F","Sa"];
+	
+	return days[dayNum];
+}
+
+
+
 
 
 </script>
@@ -104,7 +176,13 @@ table.tablespan {
     *border-collapse: expression('separate', cellSpacing = '10px');
 }
 
+
 .span {
+	border: solid thin black;
+	width: 20px;
+	height: 20px;
+}
+.colorspan {
 	border: solid thin black;
 	width: 20px;
 	height: 20px;
@@ -116,7 +194,7 @@ table.tablespan {
 <body>
 <div id="control"></div>
 <div id="display"></div>
-<div id="pallet"></div>
+<div id="palette"></div>
 <div id="calendar"></div>
 </body>
 </html>
