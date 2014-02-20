@@ -7,6 +7,11 @@
 <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.9.0/jquery-ui.min.js" type="text/javascript"></script>
 <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.2/themes/ui-lightness/jquery-ui.css" type="text/css" media="all" />
 
+
+<script src='spectrum.js'></script>
+<link rel='stylesheet' href='spectrum.css' />
+    
+    
 <script>
 
 var weekStartDate = new Date("2014-01-26 00:00:00");
@@ -19,6 +24,8 @@ $(document).ready(function(){
 	
 	makePalette();
 	makeFrame();
+    makeControls();
+    makeEventHandlers();
 	
 
 	$(".span").on("hover click", function(){
@@ -32,7 +39,7 @@ $(document).ready(function(){
 			if(!spans[id]) {
 				spans[id] = {};
 			} 
-			spans[id].color = "blue";
+			spans[id].color = currColor;
 		}
 	
 	});
@@ -50,7 +57,7 @@ $(document).ready(function(){
 
 var timeType = {};
 timeType["kdtyson"] = {"choices": {}};
-timeType["kdtyson"].choices["green"] =
+timeType["kdtyson"].choices["#00ff00"] =
 		{level_1 : "TRC-Drisco",
 		level_2 : "Maintenance",
 		level_3 : "General",		
@@ -58,7 +65,7 @@ timeType["kdtyson"].choices["green"] =
 		activatedDate : "",
 		closedDate : ""	
 };
-timeType["kdtyson"].choices["blue"] =
+timeType["kdtyson"].choices["#0000ff"] =
 		{level_1 : "TRC-Bethel",
 		level_2 : "Maintenance",
 		level_3 : "General",		
@@ -66,7 +73,7 @@ timeType["kdtyson"].choices["blue"] =
 		activatedDate : "",
 		closedDate : ""	
 };
-timeType["kdtyson"].choices["red"] =
+timeType["kdtyson"].choices["#ff0000"] =
 		{level_1 : "TT",
 		level_2 : "Maintenance",
 		level_3 : "General",		
@@ -157,8 +164,89 @@ function getDayLabel(dayNum) {
 	
 	return days[dayNum];
 }
+    
+    
+function makeControls() {
+    
+    var c = [];
+    
+    c.push("<div>");
+    
+    c.push("Choose Color: <input type='text' id='customcolor' />");
+    c.push("  Name: <input size='30' id='selectProjectName' />");
+    c.push("<input id='addChoice' type='button' value='Add'></input>");
+    
+    c.push("</div><div>");
+    
+    c.push("<input id='writeReport' type='button' value='Report'></input>");
+    c.push("<input id='writeObject' type='button' value='Object'></input>");
+    
+    c.push("</div>");
+    
+    $("#control").html(c.join(''));
+    
+    
+    $("#customcolor").spectrum({
+        color: "#ff0000",
+        showInput: true,
+        preferredFormat: "hex6",
+        showButtons: false
+    });
+    
+    
+}
+    
+function makeEventHandlers() {
+    
+    $("#writeReport").on("click", function() {
+        
+        
+        
+        $("#report").html("test rep");
+        
+    });
 
+    $("#writeObject").on("click", function() {
 
+        var c = [];
+        
+        c.push(JSON.stringify(spans));
+        c.push(JSON.stringify(timeType));
+               
+        $("#report").html(c.join("\n\n"));
+        
+    });
+    
+    
+    $("#addChoice").on("click", function() {
+        
+        alert($("#customcolor").val());
+        
+    });
+    
+    
+    
+    
+}
+
+$.cssHooks.backgroundColor = {
+    get: function(elem) {
+        if (elem.currentStyle)
+            var bg = elem.currentStyle["backgroundColor"];
+        else if (window.getComputedStyle)
+            var bg = document.defaultView.getComputedStyle(elem,
+                null).getPropertyValue("background-color");
+        if (bg.search("rgb") == -1)
+            return bg;
+        else {
+            bg = bg.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+            function hex(x) {
+                return ("0" + parseInt(x).toString(16)).slice(-2);
+            }
+            return "#" + hex(bg[1]) + hex(bg[2]) + hex(bg[3]);
+        }
+    }
+}
 
 
 
@@ -196,5 +284,6 @@ table.tablespan {
 <div id="display"></div>
 <div id="palette"></div>
 <div id="calendar"></div>
+<div id="report"></div>
 </body>
 </html>
