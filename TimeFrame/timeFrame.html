@@ -22,6 +22,8 @@ var spans = {};
 
 $(document).ready(function(){
 	
+
+    
 	makePalette();
 	makeFrame();
     makeControls();
@@ -44,11 +46,20 @@ $(document).ready(function(){
 	
 	});
 	
+    $("#control").hide();
 	$(".colorspan").on("click", function(){
 	
 		
 		currColor = $(this).css("background-color");
-		
+		$("#control").hide();
+	
+	});
+    
+    $(".colorspan").on("dblclick", function(){
+	
+        var color = $(this).css("background-color");
+		setEdit(color);	
+        $("#control").show();
 	
 	});
 	
@@ -61,25 +72,19 @@ timeType["kdtyson"].choices["#00ff00"] =
 		{level_1 : "TRC-Drisco",
 		level_2 : "Maintenance",
 		level_3 : "General",		
-		hidden : false,
-		activatedDate : "",
-		closedDate : ""	
+		hidden : false
 };
 timeType["kdtyson"].choices["#0000ff"] =
 		{level_1 : "TRC-Bethel",
 		level_2 : "Maintenance",
 		level_3 : "General",		
-		hidden : false,
-		activatedDate : "",
-		closedDate : ""	
+		hidden : false
 };
 timeType["kdtyson"].choices["#ff0000"] =
 		{level_1 : "TT",
 		level_2 : "Maintenance",
 		level_3 : "General",		
-		hidden : false,
-		activatedDate : "",
-		closedDate : ""	
+		hidden : false
 };
 
 function makePalette() {
@@ -89,12 +94,15 @@ function makePalette() {
 	c.push("<table class='palette'><tr>");
 
 		c.push("<td>");
-		c.push("<div class='colorspan' style='background-color:white'></div>");		
+		c.push("<div class='colorspan' title='Erase' style='background-color:white'></div>");		
 		c.push("</td>");
 	
 	for(var color in timeType["kdtyson"].choices) {
+        
+        var title = timeType["kdtyson"].choices[color].level_1 + "-" + timeType["kdtyson"].choices[color].level_2 + "-" + timeType["kdtyson"].choices[color].level_3;
+        
 		c.push("<td>");
-		c.push("<div class='colorspan' style='background-color:" + color + "'></div>");		
+		c.push("<div title='" + title + "' class='colorspan' style='background-color:" + color + "'></div>");		
 		c.push("</td>");
 	} 
 	
@@ -102,6 +110,29 @@ function makePalette() {
 	
 	$("#palette").html(c.join(''));
 
+}
+    
+function setEdit(color) {
+    
+    var timeTypeToEdit = timeType["kdtyson"].choices[color];
+    
+    var L1, L2, L3, Act;
+    if(color == "#ffffff") {
+        L1 = L2 = L3 = "";
+        Act = true;
+    } else {
+        L1 = timeTypeToEdit.level_1;
+        L2 = timeTypeToEdit.level_2;
+        L3 = timeTypeToEdit.level_3;
+        Act = timeTypeToEdit.active;
+    }
+    
+    
+    $("#setColor").spectrum("set", color);
+    $("#setLevel1").val(L1);
+    $("#setLevel2").val(L2);
+    $("#setLevel3").val(L3);
+    $("#setActive").prop('checked', Act);
 }
 
 function makeFrame() {	
@@ -172,27 +203,36 @@ function makeControls() {
     
     c.push("<div>");
     
-    c.push("Choose Color: <input type='text' id='customcolor' />");
-    c.push("  Name: <input size='30' id='selectProjectName' />");
+    c.push("Choose Color: <input type='text' id='setColor' />");
+    c.push("  Level 1: <input size='10' id='setLevel1' />");
+    c.push("  Level 2: <input size='20' id='setLevel2' />");
+    c.push("  Level 3: <input size='30' id='setLevel3' />");
+    c.push("  Active: <input type='checkbox' id='setActive' />");
     c.push("<input id='addChoice' type='button' value='Add'></input>");
-    
-    c.push("</div><div>");
-    
-    c.push("<input id='writeReport' type='button' value='Report'></input>");
-    c.push("<input id='writeObject' type='button' value='Object'></input>");
+    c.push("<input id='editChoice' type='button' value='Edit'></input>");
     
     c.push("</div>");
     
-    $("#control").html(c.join(''));
+    $("#control").html(c.join(''));   
     
     
-    $("#customcolor").spectrum({
+    $("#setColor").spectrum({
         color: "#ff0000",
         showInput: true,
         preferredFormat: "hex6",
         showButtons: false
     });
     
+    c = [];
+    
+    c.push("<div>");
+    
+    c.push("<input id='writeReport' type='button' value='Report'></input>");
+    c.push("<input id='writeObject' type='button' value='Object'></input>");
+    
+    c.push("</div>");
+    
+    $("#reportControl").html(c.join('')); 
     
 }
     
@@ -220,7 +260,7 @@ function makeEventHandlers() {
     
     $("#addChoice").on("click", function() {
         
-        alert($("#customcolor").val());
+        alert($("#setColor").val());
         
     });
     
@@ -250,6 +290,41 @@ $.cssHooks.backgroundColor = {
 
 
 
+
+
+$(function(){
+ 
+  $('.colorspan').hover(function(e){ // Hover event
+ 
+    var titleText = $(this).attr('title');
+    
+    $(this)
+      .data('tiptext', titleText)
+      .removeAttr('title');
+ 
+  $('<p class="tooltip"></p>')
+    .text(titleText)
+    .appendTo('body')
+    .css('top', (e.pageY - 10) + 'px')
+    .css('left', (e.pageX + 20) + 'px')
+    .fadeIn('slow');
+ 
+  }, function(){ // Hover off event
+ 
+    $(this).attr('title', $(this).data('tiptext'));
+    $('.tooltip').remove();
+ 
+  }).mousemove(function(e){ // Mouse move event
+ 
+    $('.tooltip')
+      .css('top', (e.pageY - 10) + 'px')
+      .css('left', (e.pageX + 20) + 'px');
+ 
+ });
+ 
+});
+    
+
 </script>
 
 <style>
@@ -275,6 +350,21 @@ table.tablespan {
 	width: 20px;
 	height: 20px;
 }
+    
+    
+.tooltip {
+    display:none;
+    position:absolute;
+    border-radius:5px;
+    box-shadow:2px 2px 3px rgba(0,0,0,.2);
+    background-color:#CCC;
+    border:1px solid #F7F7F7;
+    text-shadow:-1px -1px 0 #F4F4F4;
+    color:#666;
+    font:bold italic 16px Tahoma, Geneva, sans-serif;
+    padding:10px;
+}
+
 
 </style>
 
@@ -284,6 +374,7 @@ table.tablespan {
 <div id="display"></div>
 <div id="palette"></div>
 <div id="calendar"></div>
+<div id="reportControl"></div>
 <div id="report"></div>
 </body>
 </html>
