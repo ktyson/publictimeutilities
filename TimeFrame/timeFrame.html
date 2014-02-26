@@ -14,78 +14,71 @@
     
 <script>
 
-var weekStartDate = new Date("2014-01-26 00:00:00");
-var owner = "kdtyson";
-var currColor;
-var spans = {};
+//string representation of the getTime for the first moment of the first day of the week
+var weekStartDate; 
+var owner;
+var currColor = "#ffffff";
+var timeData = {"kdtyson":{"choices":{"#fbff00":{"level_1":"TRC","level_2":"*","level_3":"*","active":true},"#ff0000":{"level_1":"KHS","level_2":"*","level_3":"*","active":true},"#00ff07":{"level_1":"TFL","level_2":"*","level_3":"*","active":true},"#0400ff":{"level_1":"TT","level_2":"*","level_3":"*","active":true},"#ee00fd":{"level_1":"BK","level_2":"*","level_3":"*","active":true}},"weeks":{"1393135200000":{"spans":{"d_3_h_8":{"color":"#0400ff"},"d_3_h_8.5":{"color":"#0400ff"},"d_3_h_9":{"color":"#0400ff"},"d_3_h_9.5":{"color":"#0400ff"},"d_3_h_10":{"color":"#0400ff"},"d_3_h_10.5":{"color":"#0400ff"},"d_3_h_11":{"color":"#0400ff"},"d_3_h_11.5":{"color":"#0400ff"},"d_3_h_14":{"color":"#0400ff"},"d_3_h_14.5":{"color":"#0400ff"},"d_3_h_15":{"color":"#0400ff"},"d_3_h_15.5":{"color":"#0400ff"}}}}}};
+    
+    
+    
 
 
 $(document).ready(function(){
 	
-
-    
-	makePalette();
-	makeFrame();
+    makeSignin();
     makeControls();
-    makeEventHandlers();
-	
-
-	$(".span").on("hover click", function(){
-		
-		if(event.which == 1) {
-			var id = $(this).attr("id")
-			//alert("span " + id);
-		
-			$(this).css("background-color", currColor);
-		
-			if(!spans[id]) {
-				spans[id] = {};
-			} 
-			spans[id].color = currColor;
-		}
-	
-	});
-	
-    $("#control").hide();
-	$(".colorspan").on("click", function(){
-	
-		
-		currColor = $(this).css("background-color");
-		$("#control").hide();
-	
-	});
     
-    $(".colorspan").on("dblclick", function(){
+    $( "#setWeekStart" ).datepicker({
+        onSelect: function(dateText) {
+            
+            doSignin(dateText);
+                      
+            $( "#setWeekStart" ).datepicker( "setDate" , getWeekStartDate(dateText) );
+            
+                
+	       makeFrame();
+            makePalette();    
+            makeEventHandlers();
+           
+        }
+    });    
 	
-        var color = $(this).css("background-color");
-		setEdit(color);	
-        $("#control").show();
-	
-	});
-	
-
 });
+    
+function doSignin(dateText) {
+    //set two globals
+    weekStartDate = getWeekStartDate(dateText);
+    owner = $( "#setOwner" ).val();
+    
+    makeDisplay("Time for " + owner + ", Week starting " + weekStartDate);
+    
+}
 
-var timeType = {};
-timeType["kdtyson"] = {"choices": {}};
-timeType["kdtyson"].choices["#00ff00"] =
-		{level_1 : "TRC-Drisco",
-		level_2 : "Maintenance",
-		level_3 : "General",		
-		hidden : false
-};
-timeType["kdtyson"].choices["#0000ff"] =
-		{level_1 : "TRC-Bethel",
-		level_2 : "Maintenance",
-		level_3 : "General",		
-		hidden : false
-};
-timeType["kdtyson"].choices["#ff0000"] =
-		{level_1 : "TT",
-		level_2 : "Maintenance",
-		level_3 : "General",		
-		hidden : false
-};
+function getWeekStartDate(givenDate) {
+    
+    var selected = new Date(givenDate);
+    return new Date(selected.setDate(selected.getDate() - selected.getDay())).getTime().toString();
+            //var lastday = new Date(curr.setDate(curr.getDate() - curr.getDay()+6));
+    
+}
+
+function makeSignin() {
+
+    var c = [];
+	
+    c.push("Owner: <input type='text' id='setOwner' value='kdtyson'>");
+	c.push("WeekStart: <input type='text' id='setWeekStart'>");
+     
+    $("#signin").html(c.join(''));
+    
+}
+    
+function makeDisplay(info) {
+    
+    $("#display").html(info);
+    
+}
 
 function makePalette() {
 
@@ -96,35 +89,70 @@ function makePalette() {
 		c.push("<td>");
 		c.push("<div class='colorspan' title='Erase' style='background-color:white'></div>");		
 		c.push("</td>");
-	
-	for(var color in timeType["kdtyson"].choices) {
-        
-        var title = timeType["kdtyson"].choices[color].level_1 + "-" + timeType["kdtyson"].choices[color].level_2 + "-" + timeType["kdtyson"].choices[color].level_3;
-        
-		c.push("<td>");
-		c.push("<div title='" + title + "' class='colorspan' style='background-color:" + color + "'></div>");		
-		c.push("</td>");
-	} 
+	if(timeData[owner]) {
+        for(var color in timeData[owner].choices) {
+            //
+            if(timeData[owner].choices[color].active == true || $("#showInactive").prop('checked')) {
+                
+                
+                var title = timeData[owner].choices[color].level_1 + "-" + timeData[owner].choices[color].level_2 + "-" + timeData[owner].choices[color].level_3;
+                
+                c.push("<td>");
+                c.push("<div title='" + title + "' class='colorspan' style='background-color:" + color + "'></div>");		
+                c.push("</td>");
+                
+            }
+        }
+    } else {
+           
+    }
 	
 	c.push("</tr></table>");
 	
+    
 	$("#palette").html(c.join(''));
+    
+    //event handlers
+    $("#control").hide();
+	$(".colorspan").on("click", function(){		
+		currColor = $(this).css("background-color");
+		$("#control").hide();	
+	});
+    
+    $(".colorspan").on("dblclick", function(){	
+        var color = $(this).css("background-color");
+		setEdit(color);	
+        $("#control").show();	
+	}); 
+    
+    $("#showInactive").on("change", function() {
+        makePalette();
+    });    
 
 }
     
 function setEdit(color) {
     
-    var timeTypeToEdit = timeType["kdtyson"].choices[color];
+    
     
     var L1, L2, L3, Act;
     if(color == "#ffffff") {
+        //blank - add new
         L1 = L2 = L3 = "";
         Act = true;
+        $("#setColor").spectrum("enable");
+        $("#addChoice").show();
+        $("#editChoice").hide();
     } else {
-        L1 = timeTypeToEdit.level_1;
-        L2 = timeTypeToEdit.level_2;
-        L3 = timeTypeToEdit.level_3;
-        Act = timeTypeToEdit.active;
+        //exist - edit
+        var timeDataToEdit = timeData[owner].choices[color];
+        L1 = timeDataToEdit.level_1;
+        L2 = timeDataToEdit.level_2;
+        L3 = timeDataToEdit.level_3;
+        Act = timeDataToEdit.active;
+        $("#setColor").spectrum("disable");
+        $("#addChoice").hide();
+        $("#editChoice").show();
     }
     
     
@@ -133,12 +161,17 @@ function setEdit(color) {
     $("#setLevel2").val(L2);
     $("#setLevel3").val(L3);
     $("#setActive").prop('checked', Act);
+    
+    
+
 }
 
 function makeFrame() {	
 
 	var c = [];
 	
+    //note - needs own div section
+    c.push("<div>Show Inactive?<input id='showInactive' type='checkbox'/></div>")
 	c.push("<table class='tablespan'>");
 	
 	c.push("<tr>");
@@ -171,8 +204,14 @@ function makeFrame() {
 				//trim hours
 				if(Math.abs(24 - h) < 12) {
 					var id = "d_" + d + "_h_" + h/2;
-	
-					c.push("<td><div id='" + id + "' class='span'></div></td>");
+	               var bg = "#ffffff";
+
+                    if(timeData[owner].weeks[weekStartDate].spans[id]){
+                        bg = timeData[owner].weeks[weekStartDate].spans[id].color;
+                    }
+                    
+                    
+					c.push("<td><div id='" + id + "' class='span' style='background-color:" + bg + "'></div></td>");
 				}
 			}
 	
@@ -183,9 +222,30 @@ function makeFrame() {
 	c.push("</table>");
 	
 	$("#calendar").html(c.join(''));
+    
+    //event handlers    
+	$(".span").on("hover click", function(){
+		
+		if(event.which == 1) {
+			var id = $(this).attr("id")
+			//alert("span " + id);
+		  
+			$(this).css("background-color", currColor);
+              if(currColor != "#ffffff") {
+                 if(!timeData[owner].weeks[weekStartDate].spans[id]) {
+                    timeData[owner].weeks[weekStartDate].spans[id] = {};
+                 } 
+                 timeData[owner].weeks[weekStartDate].spans[id].color = currColor;
+              } else {
+                  //remove this span
+                  if(timeData[owner].weeks[weekStartDate].spans[id]) {
+                      delete timeData[owner].weeks[weekStartDate].spans[id];
+                  }
+              }
+            
+		}
 	
-	
-	$("#display").html(weekStartDate.toString());
+	});
 
 }
 
@@ -223,47 +283,134 @@ function makeControls() {
         showButtons: false
     });
     
+    
+    
+    //objects
     c = [];
-    
     c.push("<div>");
+    c.push("<input id='writeObjectSpans' type='button' value='Write Spans'></input>");  
+    c.push("<input id='writeObjectChoices' type='button' value='Write Choices'></input>");   
+    c.push("<input id='inputObjectSpans' type='button' value='Input Spans'></input>");  
+    c.push("<input id='inputObjectChoices' type='button' value='Input Choices'></input>");
+    c.push("</div>");    
+    $("#objectControl").html(c.join('')); 
     
-    c.push("<input id='writeReport' type='button' value='Report'></input>");
-    c.push("<input id='writeObject' type='button' value='Object'></input>");
-    
-    c.push("</div>");
-    
+    //reports
+    c = [];
+    c.push("<div>");    
+    c.push("<input id='writeReport' type='button' value='Report'></input>");   
+    c.push("</div>");  
     $("#reportControl").html(c.join('')); 
+    
+    
+    
     
 }
     
 function makeEventHandlers() {
     
-    $("#writeReport").on("click", function() {
+    $("#writeObjectSpans").on("click", function() {
         
-        
-        
-        $("#report").html("test rep");
+        //var c = JSON.stringify(spans);             
+        //$("#objectText").val(c);        
+
         
     });
 
-    $("#writeObject").on("click", function() {
+    $("#writeObjectChoices").on("click", function() {
 
-        var c = [];
+        var c = JSON.stringify(timeData);               
+        $("#objectText").val(c);
         
-        c.push(JSON.stringify(spans));
-        c.push(JSON.stringify(timeType));
-               
-        $("#report").html(c.join("\n\n"));
+    });
+
+    $("#inputObjectSpans").on("click", function() {
         
+       // var text = $('textarea#objectText').val();
+       // spans = JSON.parse(text);      
+       // makeFrame();
+        
+    });
+
+    $("#inputObjectChoices").on("click", function() {
+
+        var text = $('textarea#objectText').val();
+        timeData = JSON.parse(text); 
+        
+        
+        makePalette();
+        makeFrame();
     });
     
+    $("#writeReport").on("click", function() {
+
+        var c = [];     
+        
+        $.each(timeData[owner].choices, function(choice_color,choice) {
+            
+            c.push(choice.level_1 + "-" + choice.level_2 + "-" + choice.level_3);
+            var total = 0;
+            
+            $.each(TimeData[owner].weeks[weekStartDate].spans, function(time, span) {
+               //console.log(time, span);
+                if(span.color === choice_color.toString()) {
+                    total += 0.5;                       
+                }               
+            });
+            
+            c.push("......." + total + "<br/>");
+            
+            
+        });
+        
+        $("#report").html(c.join(''));
+        
+    });
     
     $("#addChoice").on("click", function() {
         
-        alert($("#setColor").val());
+        var color = $("#setColor").spectrum("get");
+        if(confirm("Add this new color choice?")) {
+            if(!timeData[owner]) {
+                timeData[owner] = {};
+                timeData[owner].choices = {};
+            }
+            if(color.toString() === "#ffffff" || timeData[owner].choices[color]) {            
+                alert("This color already exists");   
+            } else {
+                var newObj = {};
+                newObj.level_1 = $("#setLevel1").val();
+                newObj.level_2 = $("#setLevel2").val();
+                newObj.level_3 = $("#setLevel3").val();
+                newObj.active = true;
+                timeData[owner].choices[color] = newObj;
+            }
+            
+            makePalette();
+        }
         
     });
+
     
+    $("#editChoice").on("click", function() {
+        
+        if(confirm("Edit this color choice?")) {
+            var color = $("#setColor").spectrum("get");
+            if(color === "#ffffff") {
+                alert("This color already exists");
+            } else {
+                var newObj = {};
+                newObj.level_1 = $("#setLevel1").val();
+                newObj.level_2 = $("#setLevel2").val();
+                newObj.level_3 = $("#setLevel3").val();
+                newObj.active = $("#setActive").prop("checked");
+                timeData[owner].choices[color] = newObj;
+                
+                makePalette();
+            }
+        }
+        
+    });
     
     
     
@@ -370,10 +517,14 @@ table.tablespan {
 
 </head>
 <body>
-<div id="control"></div>
+    
+<div id="signin"></div>   
 <div id="display"></div>
+<div id="control"></div>
 <div id="palette"></div>
 <div id="calendar"></div>
+<div id="objectControl"></div>
+<div id="object"><textarea id="objectText"></textarea></div>
 <div id="reportControl"></div>
 <div id="report"></div>
 </body>
