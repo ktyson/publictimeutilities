@@ -1,13 +1,12 @@
-createFramework();
-
+"use strict";
 
 function createFramework() {
 
     var frames = {
         date : {},
         days : [],
-        hours
-    
+        hours : []
+    };
     
 
     var hourSection = 0.5;
@@ -15,7 +14,7 @@ function createFramework() {
     
     var numberSquares = 24 / hourSection;
     
-    for(var n = 0; n < numberSquares; n++) {
+    for (var n = 0; n < numberSquares; n++) {
     
         var type = "active";
         if (Math.abs(12 - n*hourSection) > hoursAroundNoon) {
@@ -78,3 +77,5 @@ NameSpaceLabel.Functionality = (function() {
 		}
 	};
 })();
+
+createFramework();

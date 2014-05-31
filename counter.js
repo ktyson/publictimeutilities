@@ -1,0 +1,26 @@
+
+
+ var counter = (function () {
+    "use strict";
+    var add = function(num1, num2) {
+        return num1 + num2;
+    };
+ 
+    var subtract = function(num1, num2) {
+        return num1 - num2;
+    };
+    
+    var difference = function(num1, num2) {
+        
+        return Math.abs(num1 - num2);
+
+        
+    };
+ 
+    return {
+        add: add,
+        subtract: subtract,
+        difference: difference
+    };
+ 
+}());
